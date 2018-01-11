@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <title>Traffic layer</title>
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  #map {
+    height: 100%;
+  }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+  function initMap() {
+
+
+    console.log(navigator.geolocation.getCurrentPosition(showPosition));
+    var map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 9,
+      center: {lat: 30.467170228233673, lng: 30.93451738357544}
+    });
+
+    var trafficLayer = new google.maps.TrafficLayer();
+    trafficLayer.setMap(map);
+  }
+
+
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition);
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }
+  function showPosition(position) {
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
+    map.setCenter(new google.maps.LatLng(lat, lng));
+  }
+
+
+  </script>
+  <script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYCTaWEia3TFN9qJhm9x8jZSH1nCULaoM&callback=initMap">
+  </script>
+</body>
+</html>

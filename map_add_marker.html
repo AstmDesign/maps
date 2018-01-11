@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- jQuery -->
+  <script src="//code.jquery.com/jquery.js"></script>
+
+  <!-- Google maps apis -->
+  <script src="http://maps.googleapis.com/maps/api/js"></script>
+
+  <script>
+  var map;
+  var myCenter=new google.maps.LatLng(51.508742,-0.120850);
+  var my_marker = {lat: 49.95121990866204, lng: 8.525390625};
+  var found_marker=false;
+  var infowindow;
+  var content= '<b> The current location </b> <br> Latitude: 49.95121990866204 <br>Longitude: 8.525390625';
+  var marker;
+
+  function initialize()
+  {
+    var mapProp = {
+      center:myCenter,
+      zoom:4,
+      mapTypeId:google.maps.MapTypeId.ROADMAP
+    };
+
+    map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
+
+    //  current marker
+    var marker = new google.maps.Marker({
+      position: my_marker,
+      map: map
+    });
+    infowindow = new google.maps.InfoWindow({content});
+    infowindow.open(map,marker);
+
+    // onclick add new marker
+    google.maps.event.addListener(map,'click',function(event) {
+      if (found_marker==false){
+        // clear the old location
+        // clearLocations();
+        // Add the new location
+        placeMarker(event.latLng);
+        found_marker=true;
+      }//if
+    });
+  }
+
+  // Add new marker
+  function placeMarker(location) {
+    marker = new google.maps.Marker({
+      position: location,
+      map: map
+    });
+    content=' <b>The new location </b> <br> Latitude: ' + location.lat() + '<br>Longitude: ' + location.lng();
+    infowindow.setContent(content);
+    infowindow.open(map,marker);
+    // sent the lng and lat to the textfields
+    $("#map_lat").val(location.lat());
+    $("#map_lng").val(location.lng());
+  }
+
+  // clear the old location
+  function clearLocations() {
+    infoWindow.close();
+    for (var i = 0; i < markers.length; i++) {
+      markers[i].setMap(null);
+    }
+    markers.length = 0;
+
+    locationSelect.innerHTML = "";
+    var option = document.createElement("option");
+    option.value = "none";
+    option.innerHTML = "See all results:";
+    locationSelect.appendChild(option);
+  }
+
+  google.maps.event.addDomListener(window, 'load', initialize);
+  </script>
+</head>
+
+<body>
+  <div id="googleMap" style="width:700px;height:400px;"></div>
+  <label for="map_lat">map lat: </label>
+  <input type="text" name="map_lat" id="map_lat" value="">
+  <br>
+  <label for="map_lng">map lng: </label>
+  <input type="text" name="map_lng" id="map_lng" value="">
+</body>
+
+</html>

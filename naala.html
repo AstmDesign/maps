@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <title>Simple markers</title>
+
+  <!-- Bootstrap CSS -->
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"> -->
+
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  #map {
+    height: 80%;
+  }
+  .close-submenu{
+    float: left;
+    margin: 10px;
+  }
+  .hide{
+    display: none;
+  }
+  </style>
+
+</head>
+<body onload="initMap()">
+
+  <div class="col-lg-12">
+
+    <div class="close-submenu"  data-marker-kind="Pickup">
+      <button id="Pickup_location" type="button" class="col-sm-8 pull-right">
+        Pickup  اختار من الخريطه
+      </button>
+      <br>
+      <input type="text" id="Pickup_longitude"  name="Pickup_longitude" data-ng-model="JobForm.JobLocation.Pickup.longitude" placeholder="longitude" class="col-sm-2 pull-right" required>
+      <br>
+      <input type="text" id="Pickup_latitude"   name="Pickup_latitude" data-ng-model="JobForm.JobLocation.Pickup.latitude" placeholder="latitude" class="col-sm-2 pull-right" required>
+    </div>
+
+    <div class="close-submenu" data-marker-kind="Dropoff">
+      <button id="Pickup_location" type="button" class="col-sm-8 pull-right">
+        Dropoff  اختار من الخريطه
+      </button>
+      <br>
+      <input type="text" id="Dropoff_longitude" name="Dropoff_longitude" data-ng-model="JobForm.JobLocation.Dropoff.longitude" placeholder="longitude" class="col-sm-2 pull-right" required>
+      <br>
+      <input type="text" id="Dropoff_latitude"  name="Dropoff_latitude" data-ng-model="JobForm.JobLocation.Dropoff.latitude" placeholder="latitude" class="col-sm-2 pull-right" required>
+    </div>
+
+    <div class="close-submenu" data-marker-kind="gateout">
+      <button id="Pickup_location" type="button" class="col-sm-8 pull-right">
+        gateout  اختار من الخريطه
+      </button>
+      <br>
+      <input type="text" id="gateout_longitude" name="gateout_longitude" data-ng-model="JobForm.JobLocation.gateout.longitude" placeholder="longitude" class="col-sm-2 pull-right" required>
+      <br>
+      <input type="text" id="gateout_latitude"  name="gateout_latitude" data-ng-model="JobForm.JobLocation.gateout.latitude" placeholder="latitude" class="col-sm-2 pull-right" required>
+    </div>
+
+    <div class="close-submenu" data-marker-kind="distination">
+      <button id="Pickup_location" type="button" class="col-sm-8 pull-right">
+        distination  اختار من الخريطه
+      </button>
+      <br>
+      <input type="text" id="distination_longitude"  name="distination_longitude" data-ng-model="JobForm.JobLocation.destination.longitude" placeholder="longitude" class="col-sm-4 pull-right" required>
+      <br>
+      <input type="text" id="distination_latitude"   name="distination_latitude" data-ng-model="JobForm.JobLocation.destination.latitude" placeholder="latitude" class="col-sm-4 pull-right" required>
+    </div>
+
+    <div class="close-submenu" data-marker-kind="gatein">
+      <button id="Pickup_location" type="button" class="col-sm-8 pull-right">
+        gatein  اختار من الخريطه
+      </button>
+      <br>
+      <input type="text" id="gatein_longitude" name="gatein_longitude" data-ng-model="JobForm.JobLocation.gatein.longitude"  placeholder="longitude" class="col-sm-2 pull-right" required>
+      <br>
+      <input type="text" id="gatein_latitude"  name="gatein_latitude" data-ng-model="JobForm.JobLocation.gatein.latitude"  placeholder="latitude"  class="col-sm-2 pull-right" required>
+    </div>
+
+    <a href="#" id="reset_map_elements" class="hide" onclick="map.resetMap()">
+      resetMap
+    </a>
+
+  </div><!--col-lg-12-->
+
+  <br><br><br><br><br>
+
+  <div id="map"></div>
+
+
+  <!-- jquery -->
+  <script src="//code.jquery.com/jquery.js"></script>
+
+  <!-- Googleapis -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmncjbSlW7TwLOZtmb01jmi_IJCzMF7YM&language=ar&region=EG&avoid=highways&mode=Transit&libraries=places" type="text/javascript"></script>
+
+  <script>
+  var directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+  var directionsService = new google.maps.DirectionsService();
+  var map;
+  var gateout = null;
+  var distination = null;
+  var gatein = null;
+  var pickup = null;
+  var dropoff = null;
+  var icons = [];
+  var markers = [];
+  var directionsVisible = false;
+  var disableListener = true;
+  var CurrentDate = new Date().getHours();
+  var currentLocationMarker = null;
+  var current_marker_point= null;
+
+  function initMap() {
+
+    try {
+
+      // change the map style
+      // from 6 am to 3 pm
+      if(CurrentDate >= 6 && CurrentDate < 15 ){
+
+        // Morning style.
+        var map_style = [
+          {
+            "featureType": "administrative",
+            "elementType": "labels.text.fill",
+            "stylers": [
+              {
+                "color": "#444444"
+              }
+            ]
+          },
+          {
+            "featureType": "landscape",
+            "elementType": "all",
+            "stylers": [
+              {
+                "color": "#f2f2f2"
+              }
+            ]
+          },
+          {
+            "featureType": "poi",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "road",
+            "elementType": "all",
+            "stylers": [
+              {
+                "saturation": -100
+              },
+              {
+                "lightness": 45
+              }
+            ]
+          },
+          {
+            "featureType": "road.highway",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "simplified"
+              }
+            ]
+          },
+          {
+            "featureType": "road.arterial",
+            "elementType": "labels.icon",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "transit",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "water",
+            "elementType": "all",
+            "stylers": [
+              {
+                "color": "#46bcec"
+              },
+              {
+                "visibility": "on"
+              }
+            ]
+          }
+        ];
+
+        // from 3 pm to 6 pm
+      }else if (CurrentDate >= 15 && CurrentDate <= 18 ){
+        // after noon style.
+        var map_style = [
+          {
+            "featureType": "landscape",
+            "elementType": "all",
+            "stylers": [
+              {
+                "hue": "#FFBB00"
+              },
+              {
+                "saturation": 43.400000000000006
+              },
+              {
+                "lightness": 37.599999999999994
+              },
+              {
+                "gamma": 1
+              }
+            ]
+          },
+          {
+            "featureType": "poi",
+            "elementType": "all",
+            "stylers": [
+              {
+                "hue": "#00FF6A"
+              },
+              {
+                "saturation": -1.0989010989011234
+              },
+              {
+                "lightness": 11.200000000000017
+              },
+              {
+                "gamma": 1
+              }
+            ]
+          },
+          {
+            "featureType": "road.highway",
+            "elementType": "all",
+            "stylers": [
+              {
+                "hue": "#ffc200"
+              },
+              {
+                "saturation": -61.8
+              },
+              {
+                "lightness": 45.599999999999994
+              },
+              {
+                "gamma": 1
+              },
+              {
+                "visibility": "on"
+              }
+            ]
+          },
+          {
+            "featureType": "road.arterial",
+            "elementType": "all",
+            "stylers": [
+              {
+                "hue": "#FF0300"
+              },
+              {
+                "saturation": -100
+              },
+              {
+                "lightness": 51.19999999999999
+              },
+              {
+                "gamma": 1
+              }
+            ]
+          },
+          {
+            "featureType": "road.local",
+            "elementType": "all",
+            "stylers": [
+              {
+                "hue": "#FF0300"
+              },
+              {
+                "saturation": -100
+              },
+              {
+                "lightness": 52
+              },
+              {
+                "gamma": 1
+              }
+            ]
+          },
+          {
+            "featureType": "water",
+            "elementType": "all",
+            "stylers": [
+              {
+                "hue": "#0078FF"
+              },
+              {
+                "saturation": -13.200000000000003
+              },
+              {
+                "lightness": 2.4000000000000057
+              },
+              {
+                "gamma": 1
+              }
+            ]
+          }
+        ];
+
+      }else{
+
+        // night style.
+        var map_style = [
+          {
+            "featureType": "all",
+            "elementType": "labels.text.fill",
+            "stylers": [
+              {
+                "color": "#ffffff"
+              }
+            ]
+          },
+          {
+            "featureType": "all",
+            "elementType": "labels.text.stroke",
+            "stylers": [
+              {
+                "color": "#000000"
+              },
+              {
+                "lightness": 13
+              }
+            ]
+          },
+          {
+            "featureType": "administrative",
+            "elementType": "geometry.fill",
+            "stylers": [
+              {
+                "color": "#000000"
+              }
+            ]
+          },
+          {
+            "featureType": "administrative",
+            "elementType": "geometry.stroke",
+            "stylers": [
+              {
+                "color": "#144b53"
+              },
+              {
+                "lightness": 14
+              },
+              {
+                "weight": 1.4
+              }
+            ]
+          },
+          {
+            "featureType": "landscape",
+            "elementType": "all",
+            "stylers": [
+              {
+                "color": "#08304b"
+              }
+            ]
+          },
+          {
+            "featureType": "poi",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "on"
+              }
+            ]
+          },
+          {
+            "featureType": "poi",
+            "elementType": "geometry",
+            "stylers": [
+              {
+                "color": "#0c4152"
+              },
+              {
+                "lightness": 5
+              }
+            ]
+          },
+          {
+            "featureType": "road.highway",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "road.highway",
+            "elementType": "geometry.fill",
+            "stylers": [
+              {
+                "visibility": "on"
+              },
+              {
+                "hue": "#00ff36"
+              }
+            ]
+          },
+          {
+            "featureType": "road.highway",
+            "elementType": "geometry.stroke",
+            "stylers": [
+              {
+                "lightness": 25
+              },
+              {
+                "visibility": "on"
+              },
+              {
+                "color": "#136a7d"
+              }
+            ]
+          },
+          {
+            "featureType": "road.arterial",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "off"
+              },
+              {
+                "saturation": "0"
+              },
+              {
+                "gamma": "1.00"
+              }
+            ]
+          },
+          {
+            "featureType": "road.arterial",
+            "elementType": "geometry.fill",
+            "stylers": [
+              {
+                "color": "#000000"
+              }
+            ]
+          },
+          {
+            "featureType": "road.arterial",
+            "elementType": "geometry.stroke",
+            "stylers": [
+              {
+                "color": "#0b3d51"
+              },
+              {
+                "lightness": 16
+              }
+            ]
+          },
+          {
+            "featureType": "road.local",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "on"
+              }
+            ]
+          },
+          {
+            "featureType": "road.local",
+            "elementType": "geometry",
+            "stylers": [
+              {
+                "color": "#000000"
+              }
+            ]
+          },
+          {
+            "featureType": "transit",
+            "elementType": "all",
+            "stylers": [
+              {
+                "color": "#146474"
+              }
+            ]
+          },
+          {
+            "featureType": "transit.line",
+            "elementType": "all",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "water",
+            "elementType": "all",
+            "stylers": [
+              {
+                "color": "#021019"
+              },
+              {
+                "visibility": "on"
+              }
+            ]
+          }
+        ];
+
+      }; // CurrentDate
+
+
+      // Create a map object and specify the DOM element
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 30.0444, lng: 31.2357},
+        scrollwheel: true ,
+        disableDefaultUI: true,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        zoom: 8,
+        styles: map_style
+      }); //map
+
+
+      // Define the traffic Layer
+      var trafficLayer = new google.maps.TrafficLayer();
+      trafficLayer.setMap(map);
+
+      // define the reset map
+      map.resetMap = function() {
+        try {
+          clearIcons();
+          clearMarkers();
+          clearWaypoints();
+          directionsDisplay.setMap(null);
+          directionsDisplay.setPanel(null);
+          directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+          directionsDisplay.setMap(map);
+          directionsDisplay.setPanel(document.getElementById("directionsPanel"));
+          // clear Locations
+          gateout = null;
+          distination = null;
+          gatein = null;
+          pickup = null;
+          dropoff = null;
+          // remove active map location
+          $(".close-submenu").removeClass("used-map-location");
+        } catch (e) {
+          console.log("Error loading from the internet");
+        }
+
+      };
+
+      // Add marker with key and icon
+      map.addMarkerWithIcon = function (key,icon,latlng){
+        // clear old marker
+        if(icons[key]){
+          icons[key].setMap(null);
+        };
+        // Add gate in marker
+        icons[key] = new google.maps.Marker({
+          position:latlng,
+          map: map,
+          icon: icon
+          // icon: "http://maps.google.com/mapfiles/marker" + String.fromCharCode(67) + ".png"
+        });
+        icons[key].setMap(map);
+
+        // Added lat and long coordinates
+        $("#"+current_marker_point+"_longitude").val(latlng.lat());
+        $("#"+current_marker_point+"_latitude").val(latlng.lng());
+
+      }//addMarkerWithIcon
+
+      // add marker
+      map.addMarker = function(current_marker_point,latlng) {
+
+        if(current_marker_point=="gateout"){
+
+          map.addMarkerWithIcon(0,"markers/cont_map_gate_out.png",latlng);
+          gateout = latlng;
+
+        }else if (current_marker_point=="distination") {
+
+          map.addMarkerWithIcon(1,"markers/cont_map_client.png",latlng);
+          distination = latlng;
+
+        } else if (current_marker_point=="gatein") {
+
+          map.addMarkerWithIcon(2,"markers/cont_map_gate_in.png",latlng);
+          gatein = latlng;
+
+        } else if (current_marker_point=="Pickup") {
+
+          map.addMarkerWithIcon(0,"markers/start_pin.png",latlng);
+          pickup = latlng;
+
+        } else if (current_marker_point=="Dropoff") {
+
+          map.addMarkerWithIcon(1,"markers/drop_pin.png",latlng);
+          dropoff = latlng;
+
+        }else{
+          // Add default marker
+          // markers.push(new google.maps.Marker({
+          //   position: latlng,
+          //   map: map,
+          //   icon: "http://maps.google.com/mapfiles/marker" + String.fromCharCode(markers.length + 65) + ".png"
+          // }));
+          // waypoints=latlng;
+        };
+
+      }; // addMarker
+
+      // Add gate location on map
+      map.gateMarker = function(current_marker_point,latitude,longitude){
+        gate_location = new google.maps.LatLng(latitude,longitude);
+        map.addMarker(current_marker_point,gate_location);
+      };
+
+      //here code for map center
+      map.currentLocation= false ;
+      map.setMapCenter =function(location,setzoom){
+        if( location !='current')
+        {
+          if(setzoom){
+            map.setZoom(16);
+          }
+          map.panTo(location);
+          return ;
+        }
+
+        if( map.currentLocation ){map.panTo(map.currentLocation);}
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            map.panTo(pos);
+            if( currentLocationMarker == null ){
+              currentLocationMarker= new google.maps.Marker({
+                position:new google.maps.LatLng(position.coords.latitude,position.coords.longitude),
+                map: map,
+                icon: "assets/img/current_location.png"
+              });
+            }
+            if(setzoom){
+              map.setZoom(16);
+            }
+          }, function() {
+            console.log("cant find current position");
+          });
+        }else {
+          console.log("cant find current position");
+        }
+      }; //map.setMapCenter
+
+      map.zoomToMarkers = function(markers){
+        var bounds = new google.maps.LatLngBounds();
+        for (var i = 0; i < markers.length; i++) {
+          bounds.extend(markers[i].getPosition());
+        }
+        map.fitBounds(bounds);
+      }; //map.zoomToMarkers
+
+      // Add the locations
+      google.maps.event.addListener(map, 'click', function(event) {
+        // disable add listener on start
+        if (disableListener){
+          return ;
+        }else{
+
+          // Add marker
+          map.addMarker(current_marker_point,event.latLng);
+
+          // disable add more one listener after adding one
+          disableListener = true
+
+          // calculate the road route
+          if (pickup && dropoff){
+            map.calcDistributionRoute();
+            // Show reset button
+            $("#reset_map_elements").removeClass("hide");
+          }else if (gateout && distination && gatein) {
+            map.calcContainerRoute();
+            // Show reset button
+            $("#reset_map_elements").removeClass("hide");
+          } // if
+
+          // Open the menu after adding the listener
+          setTimeout(function() {
+            $("#job_submenu").removeClass("hide");
+            $(".naqla-menu-side ul li:nth-child(2)").addClass("naqla-active");
+          }, 1000);
+
+        } // disableListener
+      }); // google.maps
+
+      map.calcDistributionRoute = function() {
+
+        var request = {
+          origin: pickup,
+          destination: dropoff,
+          travelMode: google.maps.DirectionsTravelMode.DRIVING
+        };
+
+        directionsService.route(request, function (response, status) {
+          if (status == google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);
+            var route = response.routes[0];
+            console.log("distribution");
+            console.log(route);
+            console.log(route.overview_path);
+          } else {
+            alert("directions response " + status);
+          }
+        });
+
+        clearMarkers();
+        directionsVisible = true;
+      }; //calcDistributionRoute
+
+
+      map.calcContainerRoute = function() {
+
+        var request = {
+          origin: gateout,
+          waypoints: [{location: distination, stopover: false}],
+          optimizeWaypoints: true,
+          destination: gatein,
+          travelMode: google.maps.DirectionsTravelMode.DRIVING
+        };
+
+        directionsService.route(request, function (response, status) {
+          if (status == google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);
+            var route = response.routes[0];
+            console.log("container");
+            console.log(route);
+            console.log(route.overview_path);
+
+            // get  the job points
+            var current_points="";
+            for(i=0;i<=route.overview_path.length;i++){
+              if(route.overview_path[i] && route.overview_path[i].lat() !== "undefined" && route.overview_path[i].lng() !== "undefined"){
+
+                if(i == route.overview_path.length - 1){
+                  current_points = current_points + "[" + route.overview_path[i].lat() + "," + route.overview_path[i].lng() + "," + "100]";
+                }else{
+                  current_points = current_points + "[" + route.overview_path[i].lat() + "," + route.overview_path[i].lng() + "," + "100],";
+                }
+              }
+            }
+            console.log(current_points);
+
+          } else {
+            alert("directions response " + status);
+          }
+        });
+
+        clearMarkers();
+        directionsVisible = true;
+      }; //calcContainerRoute
+
+
+
+      // map.calcRoute = function() {
+      //   var mode = google.maps.DirectionsTravelMode.DRIVING;
+      //
+      //   var request = {
+      //     origin: pickup,
+      //     // waypoints: waypoints,
+      //     destination: dropoff,
+      //     travelMode: mode,
+      //   };
+      //
+      //
+      //   directionsService.route(request, function(response, status) {
+      //     if (status == google.maps.DirectionsStatus.OK) {
+      //       directionsDisplay.setDirections(response);
+      //       // If there's more than one job cancell the data
+      //       if(directionsDisplay.directions.routes[0].legs.length > 1 ){
+      //         // Empty the old data
+      //         var map_fields = document.getElementsByClassName("map-fields");
+      //         for(var i = 0;i < map_fields.length;i++){
+      //           map_fields[i].value="";
+      //         }
+      //       }else{
+      //         // Address data
+      //         if($("#Pickup_description").val()==""){
+      //           $("#Pickup_description").val(directionsDisplay.directions.routes[0].legs[0].start_address);
+      //           angular.element('[data-ng-controller=newJobController]').scope().JobForm.JobLocation.Pickup.description= directionsDisplay.directions.routes[0].legs[0].start_address;
+      //         }
+      //
+      //         if($("#Dropoff_description").val()==""){
+      //           $("#Dropoff_description").val(directionsDisplay.directions.routes[0].legs[0].end_address);
+      //           angular.element('[data-ng-controller=newJobController]').scope().JobForm.JobLocation.Dropoff.description= directionsDisplay.directions.routes[0].legs[0].end_address;
+      //         }
+      //
+      //         // Locations data
+      //         $("#Pickup_longitude").val(directionsDisplay.directions.routes[0].legs[0].start_location.lng());
+      //         $("#Pickup_latitude").val(directionsDisplay.directions.routes[0].legs[0].start_location.lat());
+      //         $("#Dropoff_longitude").val(directionsDisplay.directions.routes[0].legs[0].end_location.lng());
+      //         $("#Dropoff_latitude").val(directionsDisplay.directions.routes[0].legs[0].end_location.lat());
+      //         ////
+      //         angular.element('[data-ng-controller=newJobController]').scope().JobForm.JobLocation.Pickup.longitude= directionsDisplay.directions.routes[0].legs[0].start_location.lng();
+      //         angular.element('[data-ng-controller=newJobController]').scope().JobForm.JobLocation.Pickup.latitude= directionsDisplay.directions.routes[0].legs[0].start_location.lat();
+      //         angular.element('[data-ng-controller=newJobController]').scope().JobForm.JobLocation.Dropoff.longitude= directionsDisplay.directions.routes[0].legs[0].end_location.lng();
+      //         angular.element('[data-ng-controller=newJobController]').scope().JobForm.JobLocation.Dropoff.latitude= directionsDisplay.directions.routes[0].legs[0].end_location.lat();
+      //
+      //       }; // directionsDisplay
+      //     }; // status
+      //   }); // directionsService
+      //
+      //   clearMarkers();
+      //   directionsVisible = true;
+      // } // calcRoute
+
+
+    } catch (e) {
+      console.log("Error loading from the internet");
+    }
+
+
+
+    // Add map search field
+    // addSearch("pac-input",map);
+  } // initMap
+
+
+  // function addSearch(inputID,map) {
+  //   //add input box
+  //   var input = document.getElementById(inputID);
+  //   var searchBox = new google.maps.places.SearchBox(input);
+  //   map.controls[google.maps.ControlPosition.RIGHT_TOP].push(input);
+  //
+  //   // Bias the SearchBox results towards current map\'s viewport.
+  //   map.addListener("bounds_changed", function () {
+  //     searchBox.setBounds(map.getBounds());
+  //   });
+  //
+  //   searchBox.addListener("places_changed", function () {
+  //     var places = searchBox.getPlaces();
+  //     var bounds = new google.maps.LatLngBounds();
+  //     places.forEach(function (place) {
+  //       if (place.geometry.viewport) {
+  //         // Only geocodes have viewport.
+  //         bounds.union(place.geometry.viewport);
+  //       } else {
+  //         bounds.extend(place.geometry.location);
+  //       }
+  //       map.fitBounds(bounds);
+  //     });
+  //   });
+  // };
+
+  function clearMarkers() {
+    for (var i = 0; i < markers.length; i++) {
+      markers[i].setMap(null);
+    };
+  }; // clearMarkers
+
+  function clearIcons(){
+    for (var i = 0; i < icons.length; i++) {
+      icons[i].setMap(null);
+    };
+  };//clearIcons
+
+  function clearWaypoints() {
+    markers = [];
+    start_point = null;
+    end_point = null;
+    waypoints = [];
+    directionsVisible = false;
+  } // clearWaypoints
+
+  function resetMap() {
+    clearMarkers();
+    clearWaypoints();
+    directionsDisplay.setMap(null);
+    directionsDisplay.setPanel(null);
+    directionsDisplay = new google.maps.DirectionsRenderer();
+    directionsDisplay.setMap(map);
+    directionsDisplay.setPanel(document.getElementById("directionsPanel"));
+  } // resetMap
+
+  // close submenu and remove active menu to show the map
+  $(document).on("click",'.close-submenu', function() {
+    $(this).addClass("used-map-location");
+    // hide job menu
+    $("#job_submenu").addClass("hide");
+    // remove active class
+    $(".naqla-menu-side ul li").removeClass("naqla-active");
+    // enable adding listener on map
+    disableListener=false;
+    // Assign location to pointer
+    current_marker_point = $(this).attr("data-marker-kind");
+  });
+
+  </script>
+</body>
+</html>
