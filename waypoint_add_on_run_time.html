@@ -23,7 +23,6 @@
   function initMap() {
     var map = null ;
     var markers = [];
-    var icons = [];
     var start_waypoint = null ;
     var end_waypoint = null ;
     var waypoints = [];
@@ -50,7 +49,12 @@
       map.addMarker(current_marker_point,event.latLng);
 
       // calculate the road route for distribution locations
-      if (icons.length >= 1){
+
+      if (markers.length >= 1){
+
+        // assign the new location for the waypoints
+        waypoints.push([{location: event.latLng, stopover: false}]);
+
         map.calcDistributionRoute();
       } // if
 
@@ -59,12 +63,15 @@
 
     // Draw distribution road route
     map.calcDistributionRoute = function() {
+      console.log(waypoints[0]);
+      console.log(waypoints);
+      console.log(waypoints[waypoints.length -1]);
 
       var request = {
-        origin: start_waypoint,
+        origin: waypoints[0],
         waypoints: waypoints,
+        destination: waypoints[waypoints.length -1],
         optimizeWaypoints: true,
-        destination: end_waypoint,
         travelMode: google.maps.DirectionsTravelMode.DRIVING
       };
 
@@ -87,45 +94,16 @@
       directionsVisible = true;
     }; //calcDistributionRoute
 
-
-
     // add marker
     map.addMarker = function(current_marker_point,latlng) {
       // Add default marker
       markers.push(new google.maps.Marker({
         position: latlng,
         map: map,
-        icon: "http://maps.google.com/mapfiles/marker" + String.fromCharCode(markers.length + 65) + ".png"
+        icon: "markers/marker.png"
       }));
 
-      map.addMarkerWithIcon(0,"markers/marker.png",latlng,null);
-
     }; // addMarker
-
-
-
-    // Add marker with key and icon
-    map.addMarkerWithIcon = function (key,icon,latlng,onClick){
-      // clear old marker
-      if(icons[key]){
-        icons[key].setMap(null);
-      };
-      // Add gate in marker
-      icons[key] = new google.maps.Marker({
-        position:latlng,
-        map: map,
-        icon: icon
-      });
-      icons[key].setMap(map);
-
-      //  to redirect to the job details page onclick
-      if(typeof onClick=='function'){
-        icons[key].addListener('click',onClick);
-      }
-
-      return icons[key];
-
-    };//addMarkerWithIcon
 
 
   }; // initMap
