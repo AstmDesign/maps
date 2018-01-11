@@ -25,7 +25,7 @@
     var markers = [];
     var start_waypoint = null ;
     var end_waypoint = null ;
-    var waypoints = [];
+    // var waypoints = [[{lat:29.981314, lng:30.951603}, stopover: false],[{lat:30.015385, lng:31.442045}, stopover: false]];
     var current_marker_point = null ;
     var directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
     var directionsService = new google.maps.DirectionsService();
@@ -53,7 +53,7 @@
       if (markers.length >= 1){
 
         // assign the new location for the waypoints
-        waypoints.push([{location: event.latLng, stopover: false}]);
+        // waypoints.push([{location: event.latLng, stopover: false}]);
 
         map.calcDistributionRoute();
       } // if
@@ -63,18 +63,17 @@
 
     // Draw distribution road route
     map.calcDistributionRoute = function() {
-      console.log(waypoints[0]);
-      console.log(waypoints);
-      console.log(waypoints[waypoints.length -1]);
+      // console.log(waypoints[0]);
+      // console.log(waypoints);
+      // console.log(waypoints[waypoints.length -1]);
 
       var request = {
-        origin: waypoints[0],
-        waypoints: waypoints,
-        destination: waypoints[waypoints.length -1],
+        origin: {lat:30.472428, lng:30.928462},// or new google.maps.LatLng(30.472428,30.928462)
+        waypoints: [{location: {lat:29.981314, lng:30.951603}, stopover: false},{location: {lat:30.015385, lng:31.442045} , stopover: false}],
+        destination: {lat:30.439667, lng:30.975588}, // or new google.maps.LatLng(30.439667,30.975588)
         optimizeWaypoints: true,
-        travelMode: google.maps.DirectionsTravelMode.DRIVING
+        travelMode: google.maps.DirectionsTravelMode.WALKING
       };
-
 
       directionsService.route(request, function (response, status) {
         if (status == google.maps.DirectionsStatus.OK) {
