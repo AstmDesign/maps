@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Compare waypoints</title>
+
+		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+	</head>
+	<body>
+
+		<script>
+			var old_data =
+			  {
+			    "location": {
+			      "lat": 31.062345409804408,
+			      "lng": 30.9375
+			    },
+			    "stopover": false
+		  	};
+
+
+			var new_data =
+			  {
+			    "location": {
+			      "lat": 30.053763,
+			      "lng": 31.335646
+			    },
+			    "stopover": false
+			  }
+		  ;
+
+
+			var waypoints =[
+			  {
+			    "location": {
+			      "lat": 31.062345409804408,
+			      "lng": 30.9375
+			    },
+			    "stopover": false
+			  },
+			  {
+			    "location": {
+			      "lat": 31.062345409804408,
+			      "lng": 30.9375
+			    },
+			    "stopover": false
+			  },
+			  {
+			    "location": {
+			      "lat": 31.041168396491425,
+			      "lng": 29.8114013671875
+			    },
+			    "stopover": false
+			  },
+			  {
+			    "location": {
+			      "lat": 31.041168396491425,
+			      "lng": 29.8114013671875
+			    },
+			    "stopover": false
+			  }
+			];
+
+
+
+			// we need to replace the old_data by the new_data in the waypoints array
+
+			for (i = 0; i < waypoints.length; i++) {
+				console.log(JSON.stringify(waypoints[i]));
+				console.log(JSON.stringify(old_data));
+
+				if(JSON.stringify(waypoints[i]) === JSON.stringify(old_data)){
+					console.log("location = " + i);
+					waypoints[i] = new_data;
+				};
+			};
+
+
+			// console.log(old_data);
+			// console.log(new_data);
+			console.log(waypoints);
+
+		</script>
+
+	</body>
+</html>
