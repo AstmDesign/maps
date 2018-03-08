@@ -31,34 +31,18 @@
     directionsDisplay.setMap(map);
 
     google.maps.event.addListener(map, 'click', function(event) {
-      if (pickup_location == null) {
-        pickup_location = event.latLng;
-        addMarker(pickup_location);
-      } else if (dropoff_location == null) {
-        dropoff_location = event.latLng;
-        addMarker(dropoff_location);
-      } else {
-        // Check the job count to allow to the first job only
-        if (waypoints.length = 0 ) {
-          waypoints.push({ location: dropoff_location , stopover: true });
-          dropoff_location = event.latLng;
-          addMarker(dropoff_location);
-        } else {
-          alert("Maximum number of waypoints reached");
-        }
-      }
+      addMarker(event.latLng);
     });
 
   }; // initialize
 
   function addMarker(latlng) {
+
     markers.push(new google.maps.Marker({
       position: latlng,
       map: map,
       icon: "http://maps.google.com/mapfiles/marker" + String.fromCharCode(markers.length + 65) + ".png"
     }));
-
-    console.log(markers.length);
 
     if(markers.length == 1){
       // Update the pickup inputs
@@ -70,19 +54,22 @@
       $("#Dropoff_latitude").val(latlng.lat());
     }
 
+    if (pickup_location == null) {
+      pickup_location = latlng;
+    } else if (dropoff_location == null) {
+      dropoff_location = latlng;
+    };
+
+    if (pickup_location && dropoff_location){
+      // enable the reset
+      $("#reset").removeClass("hide");
+      // create the direction
+      calcRoute();
+    };
+
   }; // addMarker
 
   function calcRoute() {
-    if (pickup_location == null) {
-      alert("من فضلك اضغط على الخريطه لاختيار نقطه البدايه");
-      return;
-    }
-
-    if (dropoff_location == null) {
-      alert("من فضلك اضغط على الخريطه لاختيار نقطه النهايه");
-      return;
-    }
-
     var mode = google.maps.DirectionsTravelMode.DRIVING;
 
     var request = {
@@ -126,7 +113,9 @@
   function clearMarkers() {
     for (var i = 0; i < markers.length; i++) {
       markers[i].setMap(null);
-    }
+    };
+    pickup_location = null;
+    dropoff_location = null;
   }; //clearMarkers
 
   function clearWaypoints() {
@@ -155,7 +144,7 @@
     $("#Pickup_latitude").val("");
     $("#Dropoff_longitude").val("");
     $("#Dropoff_latitude").val("");
-  }
+  }; // resetInputsData
 
   function resetData(){
     // reset the labels
@@ -167,7 +156,9 @@
     $("#Dropoff_address").html("");
     // hide the data-wrapper
     $(".data-wrapper").addClass("hide");
-  }
+    // hide the reset
+    $("#reset").addClass("hide");
+  }; //resetData
 
   function reloadMarkers(){
     // reset old data
@@ -185,13 +176,7 @@
       addMarker(new google.maps.LatLng($('#Dropoff_latitude').val(),$('#Dropoff_longitude').val()));
     };
 
-    if($('#Pickup_latitude').val() && $('#Pickup_longitude').val() & $('#Dropoff_latitude').val() && $('#Dropoff_longitude').val()){
-      // enable the button
-      // $("#submit").attr("disabled","true");
-      // create the direction
-      calcRoute();
-    };
-  }
+  }; //reloadMarkers
 
 
   $(document).on("change",'#Pickup_longitude', function(){
@@ -257,8 +242,7 @@
     </div><!--row-->
 
     <div class="row text-center">
-      <input type="button" value="Calculate The Directions"  class="btn btn-lg btn-primary" onclick="calcRoute()" id="submit"/>
-      <input type="button" value="Reset"  class="btn btn-lg btn-primary" onclick="reset()"/>
+      <input type="button" value="Reset"  class="btn btn-lg btn-primary hide" onclick="reset()" id="reset"/>
     </div><!--row-->
 
     <div class="row text-left data-wrapper hide">
